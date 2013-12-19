@@ -4,7 +4,6 @@ import dk.statsbiblioteket.medieplatform.autonomous.AbstractRunnableComponent;
 import dk.statsbiblioteket.medieplatform.autonomous.AutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.Batch;
 import dk.statsbiblioteket.medieplatform.autonomous.CallResult;
-import dk.statsbiblioteket.medieplatform.autonomous.ConfigConstants;
 import dk.statsbiblioteket.medieplatform.autonomous.Event;
 import dk.statsbiblioteket.medieplatform.autonomous.ResultCollector;
 import dk.statsbiblioteket.medieplatform.autonomous.RunnableComponent;
@@ -15,7 +14,6 @@ import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -23,12 +21,14 @@ import java.util.Properties;
  * This is an autonomous component which checks if a batch has been active for too long without reaching
  * a completed status. Specifically it looks for batches with a "Data_Received" event but without an
  * "Approved" event and for which the "Data_Received" is more than XX days old. If this is the case
- * then it sends a warning email to a list of addresses. As it is a runnable component, this will only
- * occur once per batch.
+ * then it sends a warning email to a list of addresses.
+ *
+ * The component will only create an event to indicate that it is complete if it actually (successfully) sends a
+ * warning email. In this way it can be rerun multiple times for a given batch-roundtrip.
  */
 public class DelayAlerterComponent extends AbstractRunnableComponent {
 
-    private DelayAlertMailer mailer;
+    private SimpleMailer mailer;
 
     public static String EMAIL_SENT_EVENT = "Warning_Email_Sent";
 
@@ -48,7 +48,7 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
     static int doMain(String[] args) throws IOException {
         log.info("Starting with args {}", new Object[]{args});
         Properties properties = AutonomousComponentUtils.parseArgs(args);
-        DelayAlertMailer mailer = new DelayAlertMailer(
+        SimpleMailer mailer = new SimpleMailer(
                 properties.getProperty(DelayAlerterConfigConstants.EMAIL_FROM_ADDRESS),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_HOST),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_PORT));
@@ -58,7 +58,12 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
         return result.containsFailures();
     }
 
-    public DelayAlerterComponent(Properties properties, DelayAlertMailer mailer ) {
+    /**
+     * Constructor for the class.
+     * @param properties Properties object containing all the necessary keys for this component.
+     * @param mailer  A mailer to be used in sending an alert-message if necessary.
+     */
+    public DelayAlerterComponent(Properties properties, SimpleMailer mailer ) {
         super(properties);
         this.mailer = mailer;
     }
@@ -92,8 +97,14 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
         Long alertPeriod = Integer.parseInt(
                 getProperties().getProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS))*24*3600*1000L;
         if (now.getTime() - receivedDate.getTime() > alertPeriod) {
-            resultCollector.setPreservable(true);
-            sendAlertMail(batch, resultCollector, event);
+            try {
+                sendAlertMail(batch, resultCollector, event);
+                resultCollector.setPreservable(true);
+            } catch (MessagingException e) {
+                log.error("Failed to send mail.", e);
+                resultCollector.setPreservable(false);
+                throw(e);
+            }
         } else {
             resultCollector.setPreservable(false);
             return;

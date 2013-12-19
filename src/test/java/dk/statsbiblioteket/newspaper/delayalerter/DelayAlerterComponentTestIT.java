@@ -70,18 +70,7 @@ public class DelayAlerterComponentTestIT {
         greenMail.stop();
     }
 
-    public void deleteBatch() throws Exception {
-        Batch batch = null;
-        try {
-            batch = domsEventClient.getBatch(batchId, roundTrip);
-        } catch (Exception e) {
-            return;
-        }
-        List<String> pids = fedora.findObjectFromDCIdentifier(batch.getFullID());
-        if (!pids.isEmpty()) {
-            fedora.deleteObject(pids.get(0), "Deleted in test.");
-        }
-    }
+
 
     /**
      * Test that we send an email on a delayed batch.
@@ -198,7 +187,7 @@ public class DelayAlerterComponentTestIT {
         System.out.println("Found batch in SBOI after " + nsleeps*sleep/1000L + " seconds.");
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
-        //There could be other batches that trigger emails so check that there is one from us
+        //There could be other batches that trigger emails so check that there isn't one from us
         boolean found = false;
         for (MimeMessage message: receivedMessages) {
             if (GreenMailUtil.getBody(message).contains(batchId)) {
@@ -252,7 +241,7 @@ public class DelayAlerterComponentTestIT {
         System.out.println("Found batch in SBOI after " + nsleeps*sleep/1000L + " seconds.");
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
-        //There could be other batches that trigger emails so check that there is one from us
+        //There could be other batches that trigger emails so check that there isn't one from us
         boolean found = false;
         for (MimeMessage message: receivedMessages) {
             if (GreenMailUtil.getBody(message).contains(batchId)) {
@@ -287,5 +276,16 @@ public class DelayAlerterComponentTestIT {
         return true;
     }
 
-
+    private void deleteBatch() throws Exception {
+        Batch batch = null;
+        try {
+            batch = domsEventClient.getBatch(batchId, roundTrip);
+        } catch (Exception e) {
+            return;
+        }
+        List<String> pids = fedora.findObjectFromDCIdentifier(batch.getFullID());
+        if (!pids.isEmpty()) {
+            fedora.deleteObject(pids.get(0), "Deleted in test.");
+        }
+    }
 }

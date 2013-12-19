@@ -1,7 +1,7 @@
 package dk.statsbiblioteket.newspaper.delayalerter;
 
 /**
- *
+ * Class containing constants specifying the Property keys for this component.
  */
 public final class DelayAlerterConfigConstants {
 

@@ -15,7 +15,7 @@ import java.util.Properties;
 /**
  * A simple mail-sending utility.
  */
-public class DelayAlertMailer {
+public class SimpleMailer {
 
     private String from;
     private String host;
@@ -27,7 +27,7 @@ public class DelayAlertMailer {
      * @param host the smtp host to use.
      * @param port the smtp port of the host.
      */
-    public DelayAlertMailer(String from, String host, String port) {
+    public SimpleMailer(String from, String host, String port) {
         this.from = from;
         this.host = host;
         this.port = port;

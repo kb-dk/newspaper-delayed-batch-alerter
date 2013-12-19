@@ -25,7 +25,7 @@
     <fileSets>
         <fileSet>
             <filtered>
-                true
+                false
             </filtered>
             <directory>
                 src/main/scripts
@@ -42,7 +42,7 @@
         </fileSet>
         <fileSet>
             <filtered>
-                true
+                false
             </filtered>
             <directory>
                 src/main/config
