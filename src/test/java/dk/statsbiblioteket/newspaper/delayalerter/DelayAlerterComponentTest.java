@@ -87,6 +87,7 @@ public class DelayAlerterComponentTest {
     public void setUp() {
         ServerSetup serverSetup = new ServerSetup(40026, ServerSetup.SMTP.getBindAddress(), ServerSetup.SMTP.getProtocol());
         this.greenMail = new GreenMail(serverSetup);
+        greenMail.stop();
         greenMail.start();
     }
 

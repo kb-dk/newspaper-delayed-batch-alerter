@@ -30,7 +30,7 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
 
     private DelayAlertMailer mailer;
 
-    private static String EMAIL_SENT_EVENT = "Warning_Email_Sent";
+    public static String EMAIL_SENT_EVENT = "Warning_Email_Sent";
 
     private static Logger log = LoggerFactory.getLogger(DelayAlerterComponent.class);
 
@@ -45,7 +45,7 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
         System.exit(doMain(args));
     }
 
-    private static int doMain(String[] args) throws IOException {
+    static int doMain(String[] args) throws IOException {
         log.info("Starting with args {}", new Object[]{args});
         Properties properties = AutonomousComponentUtils.parseArgs(args);
         DelayAlertMailer mailer = new DelayAlertMailer(
@@ -53,8 +53,6 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_HOST),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_PORT));
         RunnableComponent component = new DelayAlerterComponent(properties, mailer);
-        properties.setProperty(ConfigConstants.AUTONOMOUS_PAST_SUCCESSFUL_EVENTS, "Data_received");
-        properties.setProperty(ConfigConstants.AUTONOMOUS_FUTURE_EVENTS, "Approved," +  EMAIL_SENT_EVENT);
         CallResult result = AutonomousComponentUtils.startAutonomousComponent(properties, component);
         System.out.println(result);
         return result.containsFailures();
