@@ -94,8 +94,10 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
     private void processDataReceivedEvent(Batch batch, ResultCollector resultCollector, Event event) throws MessagingException {
         Date now = new Date();
         Date receivedDate = event.getDate();
-        Long alertPeriod = Integer.parseInt(
-                getProperties().getProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS))*24*3600*1000L;
+        final int delay = Integer.parseInt(
+                getProperties().getProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS));
+        Long alertPeriod = delay *24*3600*1000L;
+        log.debug("\nDate received: " + receivedDate + "\nNow:" + now + "\nDelay alert (days) " + delay);
         if (now.getTime() - receivedDate.getTime() > alertPeriod) {
             try {
                 sendAlertMail(batch, resultCollector, event);
@@ -106,6 +108,7 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
                 throw(e);
             }
         } else {
+            log.debug("Not sending mail.");
             resultCollector.setPreservable(false);
             return;
         }
