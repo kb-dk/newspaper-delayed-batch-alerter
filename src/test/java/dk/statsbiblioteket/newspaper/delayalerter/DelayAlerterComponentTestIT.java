@@ -9,7 +9,9 @@ import dk.statsbiblioteket.doms.central.connectors.EnhancedFedora;
 import dk.statsbiblioteket.doms.central.connectors.EnhancedFedoraImpl;
 import dk.statsbiblioteket.doms.webservices.authentication.Credentials;
 import dk.statsbiblioteket.medieplatform.autonomous.*;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
@@ -38,7 +40,7 @@ public class DelayAlerterComponentTestIT {
     private Properties properties;
     private GreenMail greenMail;
 
-    @BeforeTest(groups = "integrationTest")
+    @BeforeMethod(groups = "integrationTest")
     public void setUp() throws Exception {
         String genericProperties = System.getProperty("integration.test.newspaper.properties");
         File specificProperties = new File(new File(genericProperties).getParentFile(), "newspaper-delayed-batch-alerter-config/integration.test.newspaper.properties");
@@ -68,7 +70,7 @@ public class DelayAlerterComponentTestIT {
         greenMail.start();
     }
 
-    @AfterTest(groups = "integrationTest")
+    @AfterMethod(groups = "integrationTest")
     public void tearDown() throws Exception {
         deleteBatch();
         greenMail.stop();

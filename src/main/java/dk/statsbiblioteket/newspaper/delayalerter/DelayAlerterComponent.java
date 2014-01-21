@@ -123,6 +123,7 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
         String text = "Batch roundtrip " + batch.getFullID() + " was received at " + event.getDate() +
                 "\n but has not yet been approved or rejected.";
         String[] mailRecipients = getProperties().getProperty(DelayAlerterConfigConstants.DELAY_ALERT_EMAIL_ADDRESSES).split(",");
+        log.debug("Sending mail '" + text + "' to " + Arrays.asList(mailRecipients));
         mailer.sendMail(Arrays.asList(mailRecipients), subject, text);
     }
 }
