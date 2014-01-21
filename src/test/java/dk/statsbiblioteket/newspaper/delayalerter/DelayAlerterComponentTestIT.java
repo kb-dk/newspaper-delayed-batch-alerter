@@ -14,6 +14,7 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import javax.mail.internet.MimeMessage;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,15 +34,18 @@ public class DelayAlerterComponentTestIT {
     private String batchId = "123321";
     private int roundTrip = 12;
     private SBOIInterface sboi;
+    private String pathToProperties;
     private Properties properties;
     private GreenMail greenMail;
 
     @BeforeTest(groups = "integrationTest")
     public void setUp() throws Exception {
-        String pathToProperties = System.getProperty("integration.test.newspaper.properties");
-        System.out.println("Loading properties from " + pathToProperties);
+        String genericProperties = System.getProperty("integration.test.newspaper.properties");
+        File specificProperties = new File(new File(genericProperties).getParentFile(), "newspaper-delayed-batch-alerter-config/integration.test.newspaper.properties");
+        System.out.println("Loading properties from " + specificProperties.getAbsolutePath());
         properties = new Properties();
-        properties.load(new FileInputStream(pathToProperties));
+        properties.load(new FileInputStream(specificProperties));
+        pathToProperties = specificProperties.getAbsolutePath();
         DomsEventClientFactory domsEventClientFactory = new DomsEventClientFactory();
         domsEventClientFactory.setFedoraLocation(properties.getProperty(ConfigConstants.DOMS_URL));
         domsEventClientFactory.setUsername(properties.getProperty(ConfigConstants.DOMS_USERNAME));
@@ -79,10 +83,9 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainSendAlert() throws IOException, CommunicationException {
-        String pathToProperties = System.getProperty("integration.test.newspaper.properties");
         long sleep = 5000L;
         int nsleeps = 0;
-        int maxSleeps = 30;
+        int maxSleeps = 50;
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
@@ -104,10 +107,12 @@ public class DelayAlerterComponentTestIT {
         }
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
         System.out.println("Waiting for batch to be added to SBOI");
+        nsleeps = 0;
         while(!eventFoundInSBOI(batchId, roundTrip, data_received)){
             try {
                 Thread.sleep(sleep);
                 nsleeps++;
+                if (nsleeps > maxSleeps) throw new RuntimeException("SBOI not updated after " + maxSleeps*sleep/1000L + " seconds");
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -150,10 +155,9 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainApproved() throws IOException, CommunicationException {
-        String pathToProperties = System.getProperty("integration.test.newspaper.properties");
         long sleep = 5000L;
         int nsleeps = 0;
-        int maxSleeps = 30;
+        int maxSleeps = 50;
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
@@ -176,10 +180,12 @@ public class DelayAlerterComponentTestIT {
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", new Date(), "details", "Approved", true);
         System.out.println("Waiting for batch to be added to SBOI");
+        nsleeps = 0;
         while(!eventFoundInSBOI(batchId, roundTrip, data_received)){
             try {
                 Thread.sleep(sleep);
                 nsleeps++;
+                if (nsleeps > maxSleeps) throw new RuntimeException("SBOI not updated after " + maxSleeps*sleep/1000L + " seconds");
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -205,10 +211,9 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainNotTooOld() throws IOException, CommunicationException {
-        String pathToProperties = System.getProperty("integration.test.newspaper.properties");
         long sleep = 5000L;
         int nsleeps = 0;
-        int maxSleeps = 30;
+        int maxSleeps = 50;
         Date now = new Date();
         Date tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000L);
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
@@ -230,10 +235,12 @@ public class DelayAlerterComponentTestIT {
         }
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", tenDaysAgo, "details", data_received, true);
         System.out.println("Waiting for batch to be added to SBOI");
+        nsleeps = 0;
         while(!eventFoundInSBOI(batchId, roundTrip, data_received)){
             try {
                 Thread.sleep(sleep);
                 nsleeps++;
+                if (nsleeps > maxSleeps) throw new RuntimeException("SBOI not updated after " + maxSleeps*sleep/1000L + " seconds");
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
