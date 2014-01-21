@@ -93,6 +93,7 @@ public class DelayAlerterComponentTestIT {
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
         String data_received = "Data_Received";
         try {
+            //This just deletes the "Data_Received" event if it exists.
             domsEventClient.triggerWorkflowRestartFromFirstFailure(batchId, roundTrip, 10, 100L, data_received);
         } catch (NotFoundException e) {
             e.printStackTrace();
@@ -107,6 +108,7 @@ public class DelayAlerterComponentTestIT {
                 throw new RuntimeException(ex);
             }
         }
+        System.out.println("Adding a Date_Received event dated " + thirtyDaysAgo);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
         System.out.println("Waiting for batch to be added to SBOI");
         nsleeps = 0;
