@@ -270,7 +270,7 @@ public class DelayAlerterComponentTestIT {
         Batch batch;
         try {
             batch = sboi.getBatch(batchId, roundTrip);
-        } catch (NotFoundException e) {
+        } catch (NotFoundException | CommunicationException e) {
             return false;
         }
         for (Event event: batch.getEventList() ) {
