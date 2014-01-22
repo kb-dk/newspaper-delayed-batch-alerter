@@ -299,7 +299,7 @@ public class DelayAlerterComponentTestIT {
             System.out.println("No batch found to delete with identifier " + batch.getFullID());
             return;
         }
-        List<String> pids = fedora.findObjectFromDCIdentifier(batch.getFullID());
+        List<String> pids = fedora.findObjectFromDCIdentifier("path:" + batch.getFullID());
         if (!pids.isEmpty()) {
             System.out.println("Deleting pid:" + pids.get(0));
             fedora.deleteObject(pids.get(0), "Deleted in test.");
