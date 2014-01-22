@@ -33,7 +33,7 @@ public class DelayAlerterComponentTestIT {
 
     private DomsEventClient domsEventClient;
     private EnhancedFedora fedora;
-    private String batchId = "123321";
+    private String batchId = "123321123";
     private int roundTrip = 12;
     private SBOIInterface sboi;
     private String pathToProperties;

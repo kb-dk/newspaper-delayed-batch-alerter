@@ -97,7 +97,7 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
         final int delay = Integer.parseInt(
                 getProperties().getProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS));
         Long alertPeriod = delay *24*3600*1000L;
-        log.debug("\nDate received: " + receivedDate + "\nNow:" + now + "\nDelay alert (days) " + delay);
+        log.debug("\nBatch:" + batch.getFullID() +"\nDate received: " + receivedDate + "\nNow:" + now + "\nDelay alert (days) " + delay);
         if (now.getTime() - receivedDate.getTime() > alertPeriod) {
             try {
                 sendAlertMail(batch, resultCollector, event);
