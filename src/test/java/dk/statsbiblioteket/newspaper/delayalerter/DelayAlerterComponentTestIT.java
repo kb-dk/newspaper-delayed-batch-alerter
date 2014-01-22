@@ -296,7 +296,7 @@ public class DelayAlerterComponentTestIT {
         try {
             batch = domsEventClient.getBatch(batchId, roundTrip);
         } catch (Exception e) {
-            System.out.println("No batch found to delete with identifier " + batch.getFullID());
+            System.out.println("No batch found to delete for " + batchId + "-R" + roundTrip);
             return;
         }
         List<String> pids = fedora.findObjectFromDCIdentifier("path:" + batch.getFullID());
@@ -307,7 +307,8 @@ public class DelayAlerterComponentTestIT {
                 System.out.println("Failed to delete " + (pids.size()-1) + " objects.");
             }
         } else {
-            System.out.println("No batch found to delete with identifier " + batch.getFullID());
+            System.out.println("No batch found to delete for " + batchId + "-R" + roundTrip);
+
         }
     }
 }
