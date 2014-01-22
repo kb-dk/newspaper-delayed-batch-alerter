@@ -108,7 +108,8 @@ public class DelayAlerterComponentTestIT {
                 throw new RuntimeException(ex);
             }
         }
-        System.out.println("Adding a Date_Received event dated " + thirtyDaysAgo);
+        System.out.println("Batch event removed from SBOI after " + nsleeps*sleep/1000L + " seconds.");
+        System.out.println("Adding a Data_Received event dated " + thirtyDaysAgo);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
         System.out.println("Waiting for batch to be added to SBOI");
         nsleeps = 0;
@@ -288,15 +289,23 @@ public class DelayAlerterComponentTestIT {
     }
 
     private void deleteBatch() throws Exception {
+        System.out.println("Deleting batch.");
         Batch batch = null;
         try {
             batch = domsEventClient.getBatch(batchId, roundTrip);
         } catch (Exception e) {
+            System.out.println("No batch found.");
             return;
         }
         List<String> pids = fedora.findObjectFromDCIdentifier(batch.getFullID());
         if (!pids.isEmpty()) {
+            System.out.println("Deleting pid:" + pids.get(0));
             fedora.deleteObject(pids.get(0), "Deleted in test.");
+            if (pids.size() > 1) {
+                System.out.println("Failed to delete " + (pids.size()-1) + " objects.");
+            }
+        } else {
+                       System.out.println("No batch found.");
         }
     }
 }
