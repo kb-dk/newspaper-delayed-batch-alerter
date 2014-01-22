@@ -5,6 +5,7 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetup;
 import dk.statsbibliokeket.newspaper.batcheventFramework.SBOIClientImpl;
 import dk.statsbibliokeket.newspaper.batcheventFramework.SBOIInterface;
+import dk.statsbiblioteket.doms.central.connectors.BackendInvalidResourceException;
 import dk.statsbiblioteket.doms.central.connectors.EnhancedFedora;
 import dk.statsbiblioteket.doms.central.connectors.EnhancedFedoraImpl;
 import dk.statsbiblioteket.doms.webservices.authentication.Credentials;
@@ -30,6 +31,10 @@ import static org.testng.Assert.*;
  *
  */
 public class DelayAlerterComponentTestIT {
+
+    long sleep = 5000L;
+    int nsleeps = 0;
+    int maxSleeps = 100;
 
     private DomsEventClient domsEventClient;
     private EnhancedFedora fedora;
@@ -87,9 +92,6 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainSendAlert() throws IOException, CommunicationException {
-        long sleep = 5000L;
-        int nsleeps = 0;
-        int maxSleeps = 50;
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
@@ -162,9 +164,6 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainApproved() throws IOException, CommunicationException {
-        long sleep = 5000L;
-        int nsleeps = 0;
-        int maxSleeps = 50;
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
@@ -218,9 +217,6 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainNotTooOld() throws IOException, CommunicationException {
-        long sleep = 5000L;
-        int nsleeps = 0;
-        int maxSleeps = 50;
         Date now = new Date();
         Date tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000L);
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
@@ -295,7 +291,7 @@ public class DelayAlerterComponentTestIT {
         Batch batch = null;
         try {
             batch = domsEventClient.getBatch(batchId, roundTrip);
-        } catch (Exception e) {
+        } catch (NotFoundException | CommunicationException e) {
             System.out.println("No batch found to delete for " + batchId + "-R" + roundTrip);
             return;
         }
