@@ -40,8 +40,9 @@ public class DelayAlerterComponentTestIT {
     private Properties properties;
     private GreenMail greenMail;
 
-    @BeforeMethod(groups = "integrationTest")
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
+        System.out.println("Doing setUp.");
         String genericProperties = System.getProperty("integration.test.newspaper.properties");
         File specificProperties = new File(new File(genericProperties).getParentFile(), "newspaper-delayed-batch-alerter-config/integration.test.newspaper.properties");
         System.out.println("Loading properties from " + specificProperties.getAbsolutePath());
@@ -70,8 +71,9 @@ public class DelayAlerterComponentTestIT {
         greenMail.start();
     }
 
-    @AfterMethod(groups = "integrationTest")
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
+        System.out.println("Doing tearDown.");
         deleteBatch();
         greenMail.stop();
     }
