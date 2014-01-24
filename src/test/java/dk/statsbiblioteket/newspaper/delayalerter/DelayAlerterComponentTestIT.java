@@ -32,7 +32,7 @@ import static org.testng.Assert.*;
  */
 public class DelayAlerterComponentTestIT {
 
-    long sleep = 5000L;
+    long sleep = 10000L;
     int nsleeps = 0;
     int maxSleeps = 100;
 
