@@ -74,6 +74,7 @@ public class DelayAlerterComponentTestIT {
         while (batchExistsInSBOI(batchId, roundTrip)) {
             Thread.sleep(sleep);
             nsleeps++;
+            System.out.println("nsleeps = " + nsleeps + "/" + maxSleeps);
             if (nsleeps > maxSleeps) throw new RuntimeException("SBOI not updated after " + maxSleeps*sleep/1000L + " seconds");
         }
         ServerSetup serverSetup = new ServerSetup(40026, ServerSetup.SMTP.getBindAddress(), ServerSetup.SMTP.getProtocol());
@@ -286,7 +287,7 @@ public class DelayAlerterComponentTestIT {
     private boolean batchExistsInSBOI(String batchId, Integer roundTrip) throws CommunicationException {
         try {
             sboi.getBatch(batchId, roundTrip);
-        }  catch (NotFoundException e) {
+        }  catch (NotFoundException | CommunicationException e) {
             return false;
         }
         return true;
