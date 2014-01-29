@@ -22,10 +22,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static org.testng.Assert.*;
 
@@ -40,12 +37,14 @@ public class DelayAlerterComponentTestIT {
 
     private DomsEventClient domsEventClient;
     private EnhancedFedora fedora;
-    private String batchId = "123321123";
+    private String batchId = "321123";
     private int roundTrip = 12;
     private SBOIInterface sboi;
     private String pathToProperties;
     private Properties properties;
     private GreenMail greenMail;
+    private final String data_received = "Data_Received";
+
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
@@ -61,6 +60,7 @@ public class DelayAlerterComponentTestIT {
         domsEventClientFactory.setUsername(properties.getProperty(ConfigConstants.DOMS_USERNAME));
         domsEventClientFactory.setPassword(properties.getProperty(ConfigConstants.DOMS_PASSWORD));
         domsEventClientFactory.setPidGeneratorLocation(properties.getProperty(ConfigConstants.DOMS_PIDGENERATOR_URL));
+        System.out.println("Creating doms client");
         domsEventClient = domsEventClientFactory.createDomsEventClient();
         Credentials creds = new Credentials(properties.getProperty(ConfigConstants.DOMS_USERNAME), properties.getProperty(ConfigConstants.DOMS_PASSWORD));
         fedora =
@@ -70,31 +70,50 @@ public class DelayAlerterComponentTestIT {
                         null);
         String summaLocation = properties.getProperty(ConfigConstants.AUTONOMOUS_SBOI_URL);
         PremisManipulatorFactory factory = new PremisManipulatorFactory(new NewspaperIDFormatter(), PremisManipulatorFactory.TYPE);
+        System.out.println("Creating sboi client");
         sboi = new SBOIClientImpl(summaLocation, factory, domsEventClient);
-        deleteBatch();
-        nsleeps = 0;
-        boolean b = true;
-        while (b) {
-            try {
-                b = batchExistsInSBOI(batchId, roundTrip);
-            } catch (CommunicationException e) {
-                System.out.println(e.getMessage());
-            }
-            Thread.sleep(sleep);
-            nsleeps++;
-            System.out.println("nsleeps = " + nsleeps + "/" + maxSleeps);
-            if (nsleeps > maxSleeps) throw new RuntimeException("SBOI not updated after " + maxSleeps*sleep/1000L + " seconds");
-        }
+        System.out.println("Creating round-trip object (if necessary).");
+        domsEventClient.createBatchRoundTrip(batchId, roundTrip);
+        System.out.println("Resetting doms round-trip object state");
+        domsEventClient.triggerWorkflowRestartFromFirstFailure(batchId, roundTrip, 3, 500, "Data_Received");
+        System.out.println("Waiting for reindexing.");
+        waitForReindex();
         ServerSetup serverSetup = new ServerSetup(40026, ServerSetup.SMTP.getBindAddress(), ServerSetup.SMTP.getProtocol());
         this.greenMail = new GreenMail(serverSetup);
         greenMail.stop();
         greenMail.start();
     }
 
+    private void waitForReindex() throws InterruptedException {
+        nsleeps = 0;
+        List<String> past = new ArrayList<>();
+        past.add("Data_Received");
+        List<String> pastFailed = new ArrayList<>();
+        List<String> future = new ArrayList<>();
+        boolean b = true;
+        while (b) {
+            Iterator<Batch> batchIterator = null;
+            try {
+                batchIterator = sboi.getBatches(false, past, pastFailed, future);
+                while (batchIterator.hasNext()) {
+                    if (batchIterator.next().getBatchID().equals(batchId)) {
+                        b = false;
+                    }
+                }
+            } catch (CommunicationException e) {
+                e.printStackTrace();
+            }
+            Thread.sleep(sleep);
+            nsleeps++;
+            System.out.println("nsleeps = " + nsleeps + "/" + maxSleeps);
+            if (nsleeps > maxSleeps) throw new RuntimeException("SBOI not updated after " + maxSleeps*sleep/1000L + " seconds");
+        }
+    }
+
+
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         System.out.println("Doing tearDown.");
-        deleteBatch();
         greenMail.stop();
     }
 
@@ -109,8 +128,6 @@ public class DelayAlerterComponentTestIT {
         System.out.println("Starting testDoMainSendAlert()");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
-        domsEventClient.createBatchRoundTrip(batchId, roundTrip);
-        String data_received = "Data_Received";
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
         System.out.println("Waiting for batch to be added to SBOI");
         nsleeps = 0;
@@ -123,7 +140,7 @@ public class DelayAlerterComponentTestIT {
                 throw new RuntimeException(ex);
             }
         }
-        System.out.println("Found batch in SBOI after " + nsleeps*sleep/1000L + " seconds.");
+        System.out.println("Found event in SBOI after " + nsleeps*sleep/1000L + " seconds.");
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there is one from us
@@ -283,25 +300,5 @@ public class DelayAlerterComponentTestIT {
         return true;
     }
 
-    private void deleteBatch() throws CommunicationException, BackendInvalidCredsException, BackendMethodFailedException, BackendInvalidResourceException {
-        System.out.println("Deleting batch.");
-        Batch batch = null;
-        try {
-            batch = domsEventClient.getBatch(batchId, roundTrip);
-        } catch (NotFoundException | CommunicationException e) {
-            System.out.println("No batch found in doms client to delete for " + batchId + "-RT" + roundTrip);
-            return;
-        }
-        List<String> pids = fedora.findObjectFromDCIdentifier("path:" + batch.getFullID());
-        if (!pids.isEmpty()) {
-            System.out.println("Deleting pid:" + pids.get(0));
-            fedora.deleteObject(pids.get(0), "Deleted in test.");
-            if (pids.size() > 1) {
-                System.out.println("Failed to delete " + (pids.size()-1) + " objects.");
-            }
-        } else {
-            System.out.println("No batch found to delete in fedora for " + batch.getFullID());
 
-        }
-    }
 }
