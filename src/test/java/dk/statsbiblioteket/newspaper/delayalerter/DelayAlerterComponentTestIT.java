@@ -5,7 +5,9 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetup;
 import dk.statsbibliokeket.newspaper.batcheventFramework.SBOIClientImpl;
 import dk.statsbibliokeket.newspaper.batcheventFramework.SBOIInterface;
+import dk.statsbiblioteket.doms.central.connectors.BackendInvalidCredsException;
 import dk.statsbiblioteket.doms.central.connectors.BackendInvalidResourceException;
+import dk.statsbiblioteket.doms.central.connectors.BackendMethodFailedException;
 import dk.statsbiblioteket.doms.central.connectors.EnhancedFedora;
 import dk.statsbiblioteket.doms.central.connectors.EnhancedFedoraImpl;
 import dk.statsbiblioteket.doms.webservices.authentication.Credentials;
@@ -71,7 +73,13 @@ public class DelayAlerterComponentTestIT {
         sboi = new SBOIClientImpl(summaLocation, factory, domsEventClient);
         deleteBatch();
         nsleeps = 0;
-        while (batchExistsInSBOI(batchId, roundTrip)) {
+        boolean b = true;
+        while (b) {
+            try {
+                b = batchExistsInSBOI(batchId, roundTrip);
+            } catch (CommunicationException e) {
+                System.out.println(e.getMessage());
+            }
             Thread.sleep(sleep);
             nsleeps++;
             System.out.println("nsleeps = " + nsleeps + "/" + maxSleeps);
@@ -103,24 +111,6 @@ public class DelayAlerterComponentTestIT {
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
         String data_received = "Data_Received";
-        /*try {
-            //This just deletes the "Data_Received" event if it exists.
-            domsEventClient.triggerWorkflowRestartFromFirstFailure(batchId, roundTrip, 10, 100L, data_received);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Waiting for SBOI to detect reset batch object");
-        while(eventFoundInSBOI(batchId, roundTrip, data_received)){
-            try {
-                Thread.sleep(sleep);
-                nsleeps++;
-                if (nsleeps > maxSleeps) throw new RuntimeException("SBOI not updated after " + maxSleeps*sleep/1000L + " seconds");
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        System.out.println("Batch event removed from SBOI after " + nsleeps*sleep/1000L + " seconds.");
-        System.out.println("Adding a Data_Received event dated " + thirtyDaysAgo);*/
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
         System.out.println("Waiting for batch to be added to SBOI");
         nsleeps = 0;
@@ -272,7 +262,7 @@ public class DelayAlerterComponentTestIT {
     private boolean eventFoundInSBOI(String batchId, Integer roundTrip, String eventId) throws CommunicationException {
         Batch batch;
         try {
-            batch = sboi.getBatch(batchId, roundTrip);
+            batch = sboi.getBatch(batchId, roundTrip, false);
         } catch (NotFoundException | CommunicationException e) {
             return false;
         }
@@ -286,20 +276,20 @@ public class DelayAlerterComponentTestIT {
 
     private boolean batchExistsInSBOI(String batchId, Integer roundTrip) throws CommunicationException {
         try {
-            sboi.getBatch(batchId, roundTrip);
-        }  catch (NotFoundException | CommunicationException e) {
+            sboi.getBatch(batchId, roundTrip, false);
+        }  catch (NotFoundException e) {
             return false;
         }
         return true;
     }
 
-    private void deleteBatch() throws Exception {
+    private void deleteBatch() throws CommunicationException, BackendInvalidCredsException, BackendMethodFailedException, BackendInvalidResourceException {
         System.out.println("Deleting batch.");
         Batch batch = null;
         try {
             batch = domsEventClient.getBatch(batchId, roundTrip);
         } catch (NotFoundException | CommunicationException e) {
-            System.out.println("No batch found to delete for " + batchId + "-R" + roundTrip);
+            System.out.println("No batch found in doms client to delete for " + batchId + "-RT" + roundTrip);
             return;
         }
         List<String> pids = fedora.findObjectFromDCIdentifier("path:" + batch.getFullID());
@@ -310,7 +300,7 @@ public class DelayAlerterComponentTestIT {
                 System.out.println("Failed to delete " + (pids.size()-1) + " objects.");
             }
         } else {
-            System.out.println("No batch found to delete for " + batchId + "-R" + roundTrip);
+            System.out.println("No batch found to delete in fedora for " + batch.getFullID());
 
         }
     }
