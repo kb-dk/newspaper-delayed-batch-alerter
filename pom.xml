@@ -13,7 +13,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <autonomous.framework.version>1.4.3-SNAPSHOT</autonomous.framework.version>
+        <autonomous.framework.version>1.4.2</autonomous.framework.version>
     </properties>
 
     <repositories>
