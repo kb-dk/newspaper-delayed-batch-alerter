@@ -89,12 +89,14 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainSendAlert() throws IOException, CommunicationException, InterruptedException {
-        logger.debug("Starting testDoMainSendAlert()");
+        logger.debug("Entering testDoMainSendAlert");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
         logger.debug("Waiting for batch to be added to SBOI");
         waitForEvent(batchId, roundTrip, data_received, true);
+        waitForEvent(batchId, roundTrip, "Approved", false);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there is one from us
@@ -115,9 +117,11 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainApproved() throws IOException, CommunicationException, InterruptedException {
+        logger.debug("Entering testDoMainApproved.");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", new Date(), "details", "Approved", true);
         waitForEvent(batchId, roundTrip, data_received, true);
         waitForEvent(batchId, roundTrip, "Approved", true);
@@ -141,9 +145,11 @@ public class DelayAlerterComponentTestIT {
      */
     @Test(groups = "integrationTest")
     public void testDoMainNotTooOld() throws IOException, CommunicationException, InterruptedException {
+        logger.debug("Entering testDoMainNotTooOld.");
         Date now = new Date();
         Date tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000L);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", tenDaysAgo, "details", data_received, true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
         waitForEvent(batchId, roundTrip, data_received, true);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
@@ -193,7 +199,7 @@ public class DelayAlerterComponentTestIT {
                 }
                 conditionSatisfied = (eventPresent && isPresent) || (!eventPresent && !isPresent);
                 if (conditionSatisfied) {
-                    logger.debug("Batch {} {}.", localBatch.getFullID(), type);
+                    logger.debug("Event {} {} {}.", localBatch.getFullID(), eventId,  type);
                     return;
                 }
             } catch (CommunicationException e) {
@@ -223,6 +229,7 @@ public class DelayAlerterComponentTestIT {
         }
         return false;
     }
+
 }
 
 
