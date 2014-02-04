@@ -1,6 +1,6 @@
 <configuration scan="true">
 
-  <property name="LOGFILE" value="${user.home}/logs/batch-metadata-checker.log" />
+  <property name="LOGFILE" value="${user.home}/logs/newspaper-delayed-batch-alerter.log" />
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
       <file>${LOGFILE}</file>
           <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
