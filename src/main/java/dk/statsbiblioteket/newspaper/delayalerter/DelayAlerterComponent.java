@@ -54,7 +54,7 @@ public class DelayAlerterComponent extends AbstractRunnableComponent {
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_PORT));
         RunnableComponent component = new DelayAlerterComponent(properties, mailer);
         CallResult result = AutonomousComponentUtils.startAutonomousComponent(properties, component);
-        System.out.println(result);
+        log.info(result.toString());
         return result.containsFailures();
     }
 
