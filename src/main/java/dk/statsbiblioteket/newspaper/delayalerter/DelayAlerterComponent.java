@@ -1,16 +1,18 @@
 package dk.statsbiblioteket.newspaper.delayalerter;
 
-import dk.statsbiblioteket.medieplatform.autonomous.AbstractRunnableComponent;
 import dk.statsbiblioteket.medieplatform.autonomous.AutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.Batch;
 import dk.statsbiblioteket.medieplatform.autonomous.CallResult;
 import dk.statsbiblioteket.medieplatform.autonomous.Event;
 import dk.statsbiblioteket.medieplatform.autonomous.ResultCollector;
 import dk.statsbiblioteket.medieplatform.autonomous.RunnableComponent;
+import dk.statsbiblioteket.medieplatform.autonomous.SBOIBasedAbstractRunnableComponent;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.mail.MessagingException;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -26,7 +28,7 @@ import java.util.Properties;
  * The component will only create an event to indicate that it is complete if it actually (successfully) sends a
  * warning email. In this way it can be rerun multiple times for a given batch-roundtrip.
  */
-public class DelayAlerterComponent extends AbstractRunnableComponent {
+public class DelayAlerterComponent extends SBOIBasedAbstractRunnableComponent {
 
     private SimpleMailer mailer;
 

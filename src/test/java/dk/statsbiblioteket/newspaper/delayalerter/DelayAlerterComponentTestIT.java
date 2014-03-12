@@ -3,9 +3,9 @@ package dk.statsbiblioteket.newspaper.delayalerter;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetup;
-import dk.statsbibliokeket.newspaper.batcheventFramework.SBOIClientImpl;
-import dk.statsbibliokeket.newspaper.batcheventFramework.SBOIInterface;
+
 import dk.statsbiblioteket.medieplatform.autonomous.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
@@ -13,6 +13,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.mail.internet.MimeMessage;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,10 +32,10 @@ public class DelayAlerterComponentTestIT {
     int nsleeps = 0;
     int maxSleeps = 100;
 
-    private DomsEventClient domsEventClient;
+    private DomsEventStorage domsEventClient;
     private String batchId = "321123";
     private int roundTrip = 12;
-    private SBOIInterface sboi;
+    private EventTrigger sboi;
     private String pathToProperties;
     private Properties properties;
     private GreenMail greenMail;
@@ -50,17 +51,17 @@ public class DelayAlerterComponentTestIT {
         properties = new Properties();
         properties.load(new FileInputStream(specificProperties));
         pathToProperties = specificProperties.getAbsolutePath();
-        DomsEventClientFactory domsEventClientFactory = new DomsEventClientFactory();
+        DomsEventStorageFactory domsEventClientFactory = new DomsEventStorageFactory();
         domsEventClientFactory.setFedoraLocation(properties.getProperty(ConfigConstants.DOMS_URL));
         domsEventClientFactory.setUsername(properties.getProperty(ConfigConstants.DOMS_USERNAME));
         domsEventClientFactory.setPassword(properties.getProperty(ConfigConstants.DOMS_PASSWORD));
         domsEventClientFactory.setPidGeneratorLocation(properties.getProperty(ConfigConstants.DOMS_PIDGENERATOR_URL));
         logger.debug("Creating doms client");
-        domsEventClient = domsEventClientFactory.createDomsEventClient();
+        domsEventClient = domsEventClientFactory.createDomsEventStorage();
         String summaLocation = properties.getProperty(ConfigConstants.AUTONOMOUS_SBOI_URL);
         PremisManipulatorFactory factory = new PremisManipulatorFactory(new NewspaperIDFormatter(), PremisManipulatorFactory.TYPE);
         logger.debug("Creating sboi client");
-        sboi = new SBOIClientImpl(summaLocation, factory, domsEventClient);
+        sboi = new SBOIEventIndex(summaLocation, factory, domsEventClient);
         logger.debug("Creating round-trip object (if necessary).");
         domsEventClient.createBatchRoundTrip(batchId, roundTrip);
         logger.debug("Resetting doms round-trip object state");
@@ -190,7 +191,7 @@ public class DelayAlerterComponentTestIT {
             boolean eventPresent = false;
             Iterator<Batch> batchIterator = null;
             try {
-                batchIterator = sboi.getBatches(false, past, pastFailed, future);
+                batchIterator = sboi.getTriggeredBatches(past, pastFailed, future);
                 while (batchIterator.hasNext()) {
                     final Batch batch = batchIterator.next();
                     if (batch.getBatchID().equals(batchId) && batch.getRoundTripNumber() == roundTrip) {
@@ -217,8 +218,6 @@ public class DelayAlerterComponentTestIT {
         Batch batch = null;
         try {
             batch = domsEventClient.getBatch(batchId,roundTrip);
-        } catch (NotFoundException e) {
-            return false;
         } catch (CommunicationException e) {
             return false;
         }
