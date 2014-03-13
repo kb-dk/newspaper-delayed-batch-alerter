@@ -1,12 +1,12 @@
 package dk.statsbiblioteket.newspaper.delayalerter;
 
-import dk.statsbiblioteket.medieplatform.autonomous.AutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.Batch;
 import dk.statsbiblioteket.medieplatform.autonomous.CallResult;
 import dk.statsbiblioteket.medieplatform.autonomous.Event;
 import dk.statsbiblioteket.medieplatform.autonomous.ResultCollector;
 import dk.statsbiblioteket.medieplatform.autonomous.RunnableComponent;
-import dk.statsbiblioteket.medieplatform.autonomous.SBOIBasedAbstractRunnableComponent;
+import dk.statsbiblioteket.medieplatform.autonomous.SBOIDomsAutonomousComponentUtils;
+import dk.statsbiblioteket.medieplatform.autonomous.TreeProcessorAbstractRunnableComponent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ import java.util.Properties;
  * The component will only create an event to indicate that it is complete if it actually (successfully) sends a
  * warning email. In this way it can be rerun multiple times for a given batch-roundtrip.
  */
-public class DelayAlerterComponent extends SBOIBasedAbstractRunnableComponent {
+public class DelayAlerterComponent extends TreeProcessorAbstractRunnableComponent {
 
     private SimpleMailer mailer;
 
@@ -49,13 +49,13 @@ public class DelayAlerterComponent extends SBOIBasedAbstractRunnableComponent {
 
     static int doMain(String[] args) throws IOException {
         log.info("Starting with args {}", new Object[]{args});
-        Properties properties = AutonomousComponentUtils.parseArgs(args);
+        Properties properties = SBOIDomsAutonomousComponentUtils.parseArgs(args);
         SimpleMailer mailer = new SimpleMailer(
                 properties.getProperty(DelayAlerterConfigConstants.EMAIL_FROM_ADDRESS),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_HOST),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_PORT));
         RunnableComponent component = new DelayAlerterComponent(properties, mailer);
-        CallResult result = AutonomousComponentUtils.startAutonomousComponent(properties, component);
+        CallResult result = SBOIDomsAutonomousComponentUtils.startAutonomousComponent(properties, component);
         log.info(result.toString());
         return result.containsFailures();
     }

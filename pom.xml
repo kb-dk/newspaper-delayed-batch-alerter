@@ -12,10 +12,6 @@
     <artifactId>newspaper-delayed-batch-alerter</artifactId>
     <version>1.2-SNAPSHOT</version>
 
-    <properties>
-        <autonomous.framework.version>1.6-SNAPSHOT</autonomous.framework.version>
-    </properties>
-
     <repositories>
         <repository>
             <id>sbforge-nexus</id>
@@ -42,12 +38,6 @@
         	<groupId>javax.mail</groupId>
         	<artifactId>mail</artifactId>
         	<version>1.4</version>
-        </dependency>
-
-        <dependency>
-            <groupId>dk.statsbiblioteket.sbutil</groupId>
-            <artifactId>sbutil-common</artifactId>
-            <version>0.5.13</version>
         </dependency>
 
         <dependency>
@@ -81,19 +71,8 @@
 
         <dependency>
             <groupId>dk.statsbiblioteket.newspaper</groupId>
-            <artifactId>autonomous-component</artifactId>
-            <version>${autonomous.framework.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>dk.statsbiblioteket.newspaper</groupId>
-            <artifactId>doms-event-client</artifactId>
-            <version>${autonomous.framework.version}</version>
+            <artifactId>sboi-doms-autonomous-component</artifactId>
+            <version>1.6-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
@@ -102,6 +81,11 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>dk.statsbiblioteket.newspaper</groupId>
+            <artifactId>tree-processor-runnable-component</artifactId>
+            <version>1.6-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
