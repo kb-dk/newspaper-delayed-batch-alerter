@@ -89,7 +89,7 @@ public class DelayAlerterComponentTestIT {
      * @throws CommunicationException
      */
     @Test(groups = "integrationTest")
-    public void testDoMainSendAlert() throws IOException, CommunicationException, InterruptedException {
+    public void testDoMainSendAlert() throws Exception {
         logger.debug("Entering testDoMainSendAlert");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
@@ -117,7 +117,7 @@ public class DelayAlerterComponentTestIT {
      * @throws CommunicationException
      */
     @Test(groups = "integrationTest")
-    public void testDoMainApproved() throws IOException, CommunicationException, InterruptedException {
+    public void testDoMainApproved() throws Exception {
         logger.debug("Entering testDoMainApproved.");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
@@ -145,7 +145,7 @@ public class DelayAlerterComponentTestIT {
      * @throws CommunicationException
      */
     @Test(groups = "integrationTest")
-    public void testDoMainNotTooOld() throws IOException, CommunicationException, InterruptedException {
+    public void testDoMainNotTooOld() throws Exception {
         logger.debug("Entering testDoMainNotTooOld.");
         Date now = new Date();
         Date tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000L);
@@ -214,7 +214,7 @@ public class DelayAlerterComponentTestIT {
 
     }
 
-    private boolean batchContainsEvent(String batchId, Integer roundTrip, String eventId) {
+    private boolean batchContainsEvent(String batchId, Integer roundTrip, String eventId) throws Exception {
         Batch batch = null;
         try {
             batch = domsEventClient.getBatch(batchId,roundTrip);
