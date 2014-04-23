@@ -1,17 +1,21 @@
 package dk.statsbiblioteket.newspaper.delayalerter;
 
+import dk.statsbiblioteket.doms.central.connectors.fedora.pidGenerator.PIDGeneratorException;
+import dk.statsbiblioteket.medieplatform.autonomous.AutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.Batch;
 import dk.statsbiblioteket.medieplatform.autonomous.CallResult;
 import dk.statsbiblioteket.medieplatform.autonomous.Event;
 import dk.statsbiblioteket.medieplatform.autonomous.ResultCollector;
 import dk.statsbiblioteket.medieplatform.autonomous.RunnableComponent;
-import dk.statsbiblioteket.medieplatform.autonomous.SBOIDomsAutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.TreeProcessorAbstractRunnableComponent;
+import dk.statsbiblioteket.newspaper.mfpakintegration.MfPakAfterSBOIAutonomousComponentUtils;
+import dk.statsbiblioteket.newspaper.mfpakintegration.MfPakThenSBOIAutonomousComponentUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.mail.MessagingException;
+import javax.xml.bind.JAXBException;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -43,19 +47,19 @@ public class DelayAlerterComponent extends TreeProcessorAbstractRunnableComponen
      * @param args the arguments.
      * @throws IOException
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, JAXBException, PIDGeneratorException {
         System.exit(doMain(args));
     }
 
     static int doMain(String[] args) throws IOException {
         log.info("Starting with args {}", new Object[]{args});
-        Properties properties = SBOIDomsAutonomousComponentUtils.parseArgs(args);
+        Properties properties = AutonomousComponentUtils.parseArgs(args);
         SimpleMailer mailer = new SimpleMailer(
                 properties.getProperty(DelayAlerterConfigConstants.EMAIL_FROM_ADDRESS),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_HOST),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_PORT));
         RunnableComponent component = new DelayAlerterComponent(properties, mailer);
-        CallResult result = SBOIDomsAutonomousComponentUtils.startAutonomousComponent(properties, component);
+        CallResult result = MfPakAfterSBOIAutonomousComponentUtils.startAutonomousComponent(properties, component);
         log.info(result.toString());
         return result.containsFailures();
     }
