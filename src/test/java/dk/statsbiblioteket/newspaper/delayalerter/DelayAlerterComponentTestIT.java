@@ -97,7 +97,7 @@ public class DelayAlerterComponentTestIT {
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
         logger.debug("Waiting for batch to be added to SBOI");
         waitForEvent(batchId, roundTrip, data_received, true);
-        waitForEvent(batchId, roundTrip, "Approved", false);
+        waitForEvent(batchId, roundTrip, "Roundtrip_Approved", false);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there is one from us
@@ -123,9 +123,9 @@ public class DelayAlerterComponentTestIT {
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", new Date(), "details", "Approved", true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", new Date(), "details", "Roundtrip_Approved", true);
         waitForEvent(batchId, roundTrip, data_received, true);
-        waitForEvent(batchId, roundTrip, "Approved", true);
+        waitForEvent(batchId, roundTrip, "Roundtrip_Approved", true);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there isn't one from us

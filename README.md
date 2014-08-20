@@ -30,6 +30,6 @@ In addition, the event-properties must have the following values:
 
     autonomous.pastSuccessfulEvents=Data_Received
     autonomous.pastFailedEvents=
-    autonomous.futureEvents=Approved,Warning_Email_Sent
+    autonomous.futureEvents=Roundtrip_Approved,Warning_Email_Sent
 
 
