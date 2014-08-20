@@ -7,9 +7,8 @@ import dk.statsbiblioteket.medieplatform.autonomous.CallResult;
 import dk.statsbiblioteket.medieplatform.autonomous.Event;
 import dk.statsbiblioteket.medieplatform.autonomous.ResultCollector;
 import dk.statsbiblioteket.medieplatform.autonomous.RunnableComponent;
+import dk.statsbiblioteket.medieplatform.autonomous.SBOIDomsAutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.TreeProcessorAbstractRunnableComponent;
-import dk.statsbiblioteket.newspaper.mfpakintegration.MfPakAfterSBOIAutonomousComponentUtils;
-import dk.statsbiblioteket.newspaper.mfpakintegration.MfPakThenSBOIAutonomousComponentUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +58,7 @@ public class DelayAlerterComponent extends TreeProcessorAbstractRunnableComponen
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_HOST),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_PORT));
         RunnableComponent component = new DelayAlerterComponent(properties, mailer);
-        CallResult result = MfPakAfterSBOIAutonomousComponentUtils.startAutonomousComponent(properties, component);
+        CallResult result = SBOIDomsAutonomousComponentUtils.startAutonomousComponent(properties, component);
         log.info(result.toString());
         return result.containsFailures();
     }
