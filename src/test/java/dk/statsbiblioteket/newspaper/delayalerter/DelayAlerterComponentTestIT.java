@@ -156,6 +156,7 @@ public class DelayAlerterComponentTestIT {
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there isn't one from us
         boolean found = false;
+        assertTrue(receivedMessages.length > 0, "Should have received at least one mail");
         for (MimeMessage message: receivedMessages) {
             if (GreenMailUtil.getBody(message).contains(batchId)) {
                 found = true;
