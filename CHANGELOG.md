@@ -1,3 +1,7 @@
+1.4
+* Update to version 1.10 of batch event framework
+* Remove dependency on mfpak integration
+
 1.3
 * Update to version 1.8 of batch event framework to fix multithreading issue
 
