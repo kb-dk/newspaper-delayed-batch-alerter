@@ -26,6 +26,8 @@ import static org.testng.Assert.*;
  */
 public class DelayAlerterComponentTestIT {
 
+    public static final String IT_EVENT = "IT_Event";
+    public static final String ROUNDTRIP_APPROVED = "Roundtrip_Approved";
     public static Logger logger = LoggerFactory.getLogger(DelayAlerterComponentTestIT.class);
 
     long sleep = 10000L;
@@ -42,7 +44,7 @@ public class DelayAlerterComponentTestIT {
     private final String data_received = "Data_Received";
 
 
-    @BeforeMethod(alwaysRun = true)
+    @BeforeMethod()
     public void setUp() throws Exception {
         logger.debug("Doing setUp.");
         String genericProperties = System.getProperty("integration.test.newspaper.properties");
@@ -63,7 +65,8 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Creating sboi client");
         sboi = new SBOIEventIndex(summaLocation, factory, domsEventClient);
         logger.debug("Creating round-trip object (if necessary).");
-        domsEventClient.createBatchRoundTrip(batchId, roundTrip);
+        String pid = domsEventClient.createBatchRoundTrip(batchId, roundTrip);
+        logger.debug("Created doms object {}.", pid);
         logger.debug("Resetting doms round-trip object state");
         domsEventClient.triggerWorkflowRestartFromFirstFailure(batchId, roundTrip, 3, 500, "Data_Received");
         logger.debug("Waiting for reindexing.");
@@ -76,7 +79,7 @@ public class DelayAlerterComponentTestIT {
 
 
 
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod()
     public void tearDown() throws Exception {
         logger.debug("Doing tearDown.");
         greenMail.stop();
@@ -94,10 +97,11 @@ public class DelayAlerterComponentTestIT {
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", IT_EVENT, true);
         logger.debug("Waiting for batch to be added to SBOI");
         waitForEvent(batchId, roundTrip, data_received, true);
-        waitForEvent(batchId, roundTrip, "Roundtrip_Approved", false);
+        waitForEvent(batchId, roundTrip, IT_EVENT, true);
+        waitForEvent(batchId, roundTrip, ROUNDTRIP_APPROVED, false);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there is one from us
@@ -122,10 +126,10 @@ public class DelayAlerterComponentTestIT {
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", data_received, true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", new Date(), "details", "Roundtrip_Approved", true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", IT_EVENT, true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", new Date(), "details", ROUNDTRIP_APPROVED, true);
         waitForEvent(batchId, roundTrip, data_received, true);
-        waitForEvent(batchId, roundTrip, "Roundtrip_Approved", true);
+        waitForEvent(batchId, roundTrip, ROUNDTRIP_APPROVED, true);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there isn't one from us
@@ -150,13 +154,12 @@ public class DelayAlerterComponentTestIT {
         Date now = new Date();
         Date tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000L);
         domsEventClient.addEventToBatch(batchId, roundTrip, "me", tenDaysAgo, "details", data_received, true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", "IT_Event", true);
+        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", IT_EVENT, true);
         waitForEvent(batchId, roundTrip, data_received, true);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there isn't one from us
         boolean found = false;
-        assertTrue(receivedMessages.length > 0, "Should have received at least one mail");
         for (MimeMessage message: receivedMessages) {
             if (GreenMailUtil.getBody(message).contains(batchId)) {
                 found = true;
@@ -187,15 +190,17 @@ public class DelayAlerterComponentTestIT {
         past.add(eventId);
         List<String> pastFailed = new ArrayList<>();
         List<String> future = new ArrayList<>();
+        List<Batch> batches = new ArrayList<>();
+        batches.add(localBatch);
         boolean conditionSatisfied = false;
         while (!conditionSatisfied) {
             boolean eventPresent = false;
             Iterator<Batch> batchIterator = null;
             try {
-                batchIterator = sboi.getTriggeredBatches(past, pastFailed, future);
+                batchIterator = sboi.getTriggeredBatches(past, pastFailed, future,batches);
                 while (batchIterator.hasNext()) {
                     final Batch batch = batchIterator.next();
-                    if (batch.getBatchID().equals(batchId) && batch.getRoundTripNumber() == roundTrip) {
+                    if (batch.getBatchID().equals(batchId) && batch.getRoundTripNumber().equals(roundTrip)) {
                         eventPresent = true;
                     }
                 }
