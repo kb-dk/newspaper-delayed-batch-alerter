@@ -69,11 +69,6 @@
             <version>3.2.1</version>
         </dependency>
 
-        <dependency>
-            <groupId>dk.statsbiblioteket.newspaper</groupId>
-            <artifactId>newspaper-batch-event-framework-common</artifactId>
-            <version>1.12-SNAPSHOT</version>
-        </dependency>
 
         <dependency>
             <groupId>dk.statsbiblioteket.newspaper</groupId>
