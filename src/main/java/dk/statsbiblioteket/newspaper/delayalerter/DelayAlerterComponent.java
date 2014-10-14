@@ -7,7 +7,7 @@ import dk.statsbiblioteket.medieplatform.autonomous.CallResult;
 import dk.statsbiblioteket.medieplatform.autonomous.Event;
 import dk.statsbiblioteket.medieplatform.autonomous.ResultCollector;
 import dk.statsbiblioteket.medieplatform.autonomous.RunnableComponent;
-import dk.statsbiblioteket.medieplatform.autonomous.SBOIDomsAutonomousComponentUtils;
+import dk.statsbiblioteket.medieplatform.autonomous.NewspaperBatchAutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.TreeProcessorAbstractRunnableComponent;
 
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class DelayAlerterComponent extends TreeProcessorAbstractRunnableComponen
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_HOST),
                 properties.getProperty(DelayAlerterConfigConstants.SMTP_PORT));
         RunnableComponent component = new DelayAlerterComponent(properties, mailer);
-        CallResult result = SBOIDomsAutonomousComponentUtils.startAutonomousComponent(properties, component);
+        CallResult result = NewspaperBatchAutonomousComponentUtils.startAutonomousComponent(properties, component);
         log.info(result.toString());
         return result.containsFailures();
     }
@@ -79,7 +79,7 @@ public class DelayAlerterComponent extends TreeProcessorAbstractRunnableComponen
     }
 
     @Override
-    public void doWorkOnBatch(Batch batch, ResultCollector resultCollector) throws Exception {
+    public void doWorkOnItem(Batch batch, ResultCollector resultCollector) throws Exception {
         List<Event> events=  batch.getEventList();
         for (Event event: events) {
             if (event.getEventID().equals("Data_Received")) {

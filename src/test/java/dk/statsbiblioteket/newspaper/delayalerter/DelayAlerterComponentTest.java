@@ -36,7 +36,7 @@ public class DelayAlerterComponentTest {
      * @throws Exception
      */
     @Test
-    public void testDoWorkOnBatchNotYetDelayed() throws Exception {
+    public void testdoWorkOnItemNotYetDelayed() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_EMAIL_ADDRESSES, "foo@bar.com, bar@bar.com");
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS, "20");
@@ -53,7 +53,7 @@ public class DelayAlerterComponentTest {
         batch.setEventList(events);
         batch.setBatchID("B403485748392");
         batch.setRoundTripNumber(4);
-        component.doWorkOnBatch(batch, resultCollector);
+        component.doWorkOnItem(batch, resultCollector);
         verify(simpleMailer, never()).sendMail(anyList(), anyString(), anyString());
     }
 
@@ -62,7 +62,7 @@ public class DelayAlerterComponentTest {
      * @throws Exception
      */
     @Test
-    public void testDoWorkOnBatchDelayed() throws Exception {
+    public void testdoWorkOnItemDelayed() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_EMAIL_ADDRESSES, "foo@bar.com, bar@bar.com");
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS, "20");
@@ -79,7 +79,7 @@ public class DelayAlerterComponentTest {
         batch.setEventList(events);
         batch.setBatchID("B403485748392");
         batch.setRoundTripNumber(4);
-        component.doWorkOnBatch(batch, resultCollector);
+        component.doWorkOnItem(batch, resultCollector);
         verify(simpleMailer, times(1)).sendMail(anyList(), anyString(), anyString());
     }
 
@@ -103,7 +103,7 @@ public class DelayAlerterComponentTest {
      * @throws Exception
      */
     @Test
-    public void testDoWorkOnBatchDelayedRealMail() throws Exception {
+    public void testdoWorkOnItemDelayedRealMail() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_EMAIL_ADDRESSES, "foo@bar.com, bar@bar.com");
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS, "20");
@@ -120,7 +120,7 @@ public class DelayAlerterComponentTest {
         batch.setEventList(events);
         batch.setBatchID("B403485748392");
         batch.setRoundTripNumber(4);
-        component.doWorkOnBatch(batch, resultCollector);
+        component.doWorkOnItem(batch, resultCollector);
         String body = GreenMailUtil.getBody(greenMail.getReceivedMessages()[0]);
         assertTrue(body.contains(batch.getFullID()));
     }
@@ -131,7 +131,7 @@ public class DelayAlerterComponentTest {
      * @throws Exception
      */
     @Test
-    public void testDoWorkOnBatchMailFailed() throws Exception {
+    public void testdoWorkOnItemMailFailed() throws Exception {
         Properties properties = new Properties();
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_EMAIL_ADDRESSES, "foo@bar.com, bar@bar.com");
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS, "20");
@@ -150,7 +150,7 @@ public class DelayAlerterComponentTest {
         batch.setRoundTripNumber(4);
         doThrow(new MessagingException("foobar")).when(simpleMailer).sendMail(anyList(), anyString(), anyString());
         try {
-            component.doWorkOnBatch(batch, resultCollector);
+            component.doWorkOnItem(batch, resultCollector);
             fail("Should have thrown an exception here.");
         } catch (Exception e) {
             //expected

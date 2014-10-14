@@ -39,10 +39,10 @@ public class DelayAlerterComponentTestIT {
     int nsleeps = 0;
     int maxSleeps = 100;
 
-    private DomsEventStorage domsEventClient;
+    private NewspaperDomsEventStorage domsEventClient;
     private String batchId = "321123";
     private int roundTrip = 12;
-    private EventTrigger sboi;
+    private EventTrigger<Batch> sboi;
     private String pathToProperties;
     private Properties properties;
     private GreenMail greenMail;
@@ -58,7 +58,7 @@ public class DelayAlerterComponentTestIT {
         properties = new Properties();
         properties.load(new FileInputStream(specificProperties));
         pathToProperties = specificProperties.getAbsolutePath();
-        DomsEventStorageFactory domsEventClientFactory = new DomsEventStorageFactory();
+        NewspaperDomsEventStorageFactory domsEventClientFactory = new NewspaperDomsEventStorageFactory();
         domsEventClientFactory.setFedoraLocation(properties.getProperty(ConfigConstants.DOMS_URL));
         domsEventClientFactory.setUsername(properties.getProperty(ConfigConstants.DOMS_USERNAME));
         domsEventClientFactory.setPassword(properties.getProperty(ConfigConstants.DOMS_PASSWORD));
@@ -66,14 +66,14 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Creating doms client");
         domsEventClient = domsEventClientFactory.createDomsEventStorage();
         String summaLocation = properties.getProperty(ConfigConstants.AUTONOMOUS_SBOI_URL);
-        PremisManipulatorFactory factory = new PremisManipulatorFactory(new NewspaperIDFormatter(), PremisManipulatorFactory.TYPE);
+        PremisManipulatorFactory<Batch> factory = new PremisManipulatorFactory<>( PremisManipulatorFactory.TYPE,new BatchItemFactory());
         logger.debug("Creating sboi client");
-        sboi = new SBOIEventIndex(summaLocation, factory, domsEventClient);
+        sboi = new SBOIEventIndex<>(summaLocation, factory, domsEventClient);
         logger.debug("Creating round-trip object (if necessary).");
-        String pid = domsEventClient.createBatchRoundTrip(batchId, roundTrip);
+        String pid = domsEventClient.createBatchRoundTrip(Batch.formatFullID(batchId, roundTrip));
         logger.debug("Created doms object {}.", pid);
         logger.debug("Resetting doms round-trip object state");
-        domsEventClient.triggerWorkflowRestartFromFirstFailure(batchId, roundTrip, 3, 500, "Data_Received");
+        domsEventClient.triggerWorkflowRestartFromFirstFailure(new Batch(batchId, roundTrip), 3, 500, "Data_Received");
         logger.debug("Waiting for reindexing.");
         waitForEvent(batchId, roundTrip, DATA_RECEIVED, false);
         ServerSetup serverSetup = new ServerSetup(40026, ServerSetup.SMTP.getBindAddress(), ServerSetup.SMTP.getProtocol());
@@ -101,8 +101,8 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Entering testDoMainSendAlert");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", IT_EVENT, true);
+        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
+        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
         logger.debug("Waiting for batch to be added to SBOI");
         waitForBatchIsInSboi(batchId,
                 roundTrip,
@@ -138,7 +138,7 @@ public class DelayAlerterComponentTestIT {
             boolean eventPresent = false;
             Iterator<Batch> batchIterator;
             try {
-                batchIterator = sboi.getTriggeredBatches(past, pastFailed, future, batches);
+                batchIterator = sboi.getTriggeredItems(past, pastFailed, future, batches);
                 while (batchIterator.hasNext()) {
                     final Batch batch = batchIterator.next();
                     if (batch.getBatchID().equals(batchId) && batch.getRoundTripNumber().equals(roundTrip)) {
@@ -176,9 +176,9 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Entering testDoMainApproved.");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", IT_EVENT, true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", new Date(), "details", ROUNDTRIP_APPROVED, true);
+        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
+        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
+        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", new Date(), "details", ROUNDTRIP_APPROVED, true);
         waitForBatchIsInSboi(batchId,
                 roundTrip,
                 DATA_RECEIVED + "," + IT_EVENT + "," + ROUNDTRIP_APPROVED,
@@ -207,8 +207,8 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Entering testDoMainNotTooOld.");
         Date now = new Date();
         Date tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000L);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", tenDaysAgo, "details", DATA_RECEIVED, true);
-        domsEventClient.addEventToBatch(batchId, roundTrip, "me", now, "details", IT_EVENT, true);
+        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", tenDaysAgo, "details", DATA_RECEIVED, true);
+        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
         waitForBatchIsInSboi(batchId,
                 roundTrip,
                 DATA_RECEIVED + "," + IT_EVENT,
@@ -255,7 +255,7 @@ public class DelayAlerterComponentTestIT {
             boolean eventPresent = false;
             Iterator<Batch> batchIterator = null;
             try {
-                batchIterator = sboi.getTriggeredBatches(past, pastFailed, future,batches);
+                batchIterator = sboi.getTriggeredItems(past, pastFailed, future,batches);
                 while (batchIterator.hasNext()) {
                     final Batch batch = batchIterator.next();
                     if (batch.getBatchID().equals(batchId) && batch.getRoundTripNumber().equals(roundTrip)) {
@@ -281,7 +281,7 @@ public class DelayAlerterComponentTestIT {
     private boolean batchContainsEvent(String batchId, Integer roundTrip, String eventId) throws Exception {
         Batch batch = null;
         try {
-            batch = domsEventClient.getBatch(batchId,roundTrip);
+            batch = domsEventClient.getItemFromFullID(Batch.formatFullID(batchId,roundTrip));
         } catch (CommunicationException e) {
             return false;
         }

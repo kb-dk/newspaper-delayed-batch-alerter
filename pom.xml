@@ -71,14 +71,14 @@
 
         <dependency>
             <groupId>dk.statsbiblioteket.newspaper</groupId>
-            <artifactId>sboi-doms-autonomous-component</artifactId>
-            <version>1.11-SNAPSHOT</version>
+            <artifactId>newspaper-batch-event-framework-common</artifactId>
+            <version>1.12-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>dk.statsbiblioteket.newspaper</groupId>
             <artifactId>tree-processor-runnable-component</artifactId>
-            <version>1.11-SNAPSHOT</version>
+            <version>1.12-SNAPSHOT</version>
         </dependency>
 
         <dependency>
