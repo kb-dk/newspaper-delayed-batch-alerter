@@ -68,7 +68,7 @@ public class DelayAlerterComponentTestIT {
         String summaLocation = properties.getProperty(ConfigConstants.AUTONOMOUS_SBOI_URL);
         PremisManipulatorFactory<Batch> factory = new PremisManipulatorFactory<>( PremisManipulatorFactory.TYPE,new BatchItemFactory());
         logger.debug("Creating sboi client");
-        sboi = new SBOIEventIndex<>(summaLocation, factory, domsEventClient);
+        sboi = new SBOIEventIndex<>(summaLocation, factory, domsEventClient, Integer.parseInt(properties.getProperty(ConfigConstants.SBOI_PAGESIZE,"100")));
         logger.debug("Creating round-trip object (if necessary).");
         String pid = domsEventClient.createBatchRoundTrip(Batch.formatFullID(batchId, roundTrip));
         logger.debug("Created doms object {}.", pid);
