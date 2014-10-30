@@ -106,9 +106,7 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Waiting for batch to be added to SBOI");
         waitForBatchIsInSboi(batchId,
                 roundTrip,
-                DATA_RECEIVED + "," + IT_EVENT,
-                "",
-                ROUNDTRIP_APPROVED + "," + WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
+                DATA_RECEIVED + "," + IT_EVENT, ROUNDTRIP_APPROVED + "," + WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there is one from us
@@ -122,23 +120,18 @@ public class DelayAlerterComponentTestIT {
         assertTrue(batchContainsEvent(batchId, roundTrip, DelayAlerterComponent.EMAIL_SENT_EVENT));
     }
 
-    private void waitForBatchIsInSboi(String batchId, int roundTrip, String s, String s1, String s2) throws
-                                                                                                     InterruptedException {
+    private void waitForBatchIsInSboi(String batchId, int roundTrip, String pastEvents, String futureEvents) throws InterruptedException {
         Batch localBatch = new Batch(batchId, roundTrip);
         nsleeps = 0;
-        List<String> past = new ArrayList<>();
-        addToList(s, past);
-        List<String> pastFailed = new ArrayList<>();
-        addToList(s1, pastFailed);
-        List<String> future = new ArrayList<>();
-        addToList(s2, future);
-        List<Batch> batches = new ArrayList<>();
-        batches.add(localBatch);
         while (true) {
             boolean eventPresent = false;
             Iterator<Batch> batchIterator;
             try {
-                batchIterator = sboi.getTriggeredItems(past, pastFailed, future, batches);
+                EventTrigger.Query<Batch> query = new EventTrigger.Query<>();
+                query.getPastSuccessfulEvents().addAll(Arrays.asList(pastEvents.trim().split(",")));
+                query.getFutureEvents().addAll(Arrays.asList(futureEvents.trim().split(",")));
+                query.getItems().add(localBatch);
+                batchIterator = sboi.getTriggeredItems(query);
                 while (batchIterator.hasNext()) {
                     final Batch batch = batchIterator.next();
                     if (batch.getBatchID().equals(batchId) && batch.getRoundTripNumber().equals(roundTrip)) {
@@ -160,12 +153,6 @@ public class DelayAlerterComponentTestIT {
         }
     }
 
-    private void addToList(String s, List<String> past) {
-        if (!s.trim().isEmpty()){
-            past.addAll(Arrays.asList(s.split(",")));
-        }
-    }
-
     /**
      * Test that we don't send an email on an approved batch.
      * @throws IOException
@@ -181,9 +168,7 @@ public class DelayAlerterComponentTestIT {
         domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", new Date(), "details", ROUNDTRIP_APPROVED, true);
         waitForBatchIsInSboi(batchId,
                 roundTrip,
-                DATA_RECEIVED + "," + IT_EVENT + "," + ROUNDTRIP_APPROVED,
-                "",
-                WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
+                DATA_RECEIVED + "," + IT_EVENT + "," + ROUNDTRIP_APPROVED, WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there isn't one from us
@@ -211,9 +196,7 @@ public class DelayAlerterComponentTestIT {
         domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
         waitForBatchIsInSboi(batchId,
                 roundTrip,
-                DATA_RECEIVED + "," + IT_EVENT,
-                "",
-                ROUNDTRIP_APPROVED+","+WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
+                DATA_RECEIVED + "," + IT_EVENT, ROUNDTRIP_APPROVED+","+WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
         DelayAlerterComponent.doMain(new String[]{"-c", pathToProperties});
         MimeMessage[] receivedMessages = greenMail.getReceivedMessages();
         //There could be other batches that trigger emails so check that there isn't one from us
@@ -244,18 +227,15 @@ public class DelayAlerterComponentTestIT {
         }
         logger.debug("Waiting for event {} {} to be {}.", localBatch.getFullID(), eventId, type);
         nsleeps = 0;
-        List<String> past = new ArrayList<>();
-        past.add(eventId);
-        List<String> pastFailed = new ArrayList<>();
-        List<String> future = new ArrayList<>();
-        List<Batch> batches = new ArrayList<>();
-        batches.add(localBatch);
 
         while (true) {
             boolean eventPresent = false;
             Iterator<Batch> batchIterator = null;
             try {
-                batchIterator = sboi.getTriggeredItems(past, pastFailed, future,batches);
+                EventTrigger.Query<Batch> query = new EventTrigger.Query();
+                query.getPastSuccessfulEvents().add(eventId);
+                query.getItems().add(localBatch);
+                batchIterator = sboi.getTriggeredItems(query);
                 while (batchIterator.hasNext()) {
                     final Batch batch = batchIterator.next();
                     if (batch.getBatchID().equals(batchId) && batch.getRoundTripNumber().equals(roundTrip)) {

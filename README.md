@@ -29,7 +29,7 @@ properties:
 In addition, the event-properties must have the following values:
 
     autonomous.pastSuccessfulEvents=Data_Received
-    autonomous.pastFailedEvents=
+    autonomous.oldEvents=
     autonomous.futureEvents=Roundtrip_Approved,Warning_Email_Sent
 
 
