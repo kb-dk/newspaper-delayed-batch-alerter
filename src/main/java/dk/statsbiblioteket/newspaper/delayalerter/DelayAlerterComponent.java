@@ -1,6 +1,7 @@
 package dk.statsbiblioteket.newspaper.delayalerter;
 
 import dk.statsbiblioteket.doms.central.connectors.fedora.pidGenerator.PIDGeneratorException;
+import dk.statsbiblioteket.medieplatform.autonomous.AbstractRunnableComponent;
 import dk.statsbiblioteket.medieplatform.autonomous.AutonomousComponentUtils;
 import dk.statsbiblioteket.medieplatform.autonomous.Batch;
 import dk.statsbiblioteket.medieplatform.autonomous.CallResult;
@@ -31,7 +32,7 @@ import java.util.Properties;
  * The component will only create an event to indicate that it is complete if it actually (successfully) sends a
  * warning email. In this way it can be rerun multiple times for a given batch-roundtrip.
  */
-public class DelayAlerterComponent extends TreeProcessorAbstractRunnableComponent {
+public class DelayAlerterComponent extends AbstractRunnableComponent<Batch> {
 
     private SimpleMailer mailer;
 

@@ -1,4 +1,5 @@
 1.5
+* Do not depend on an unused iterator
 * Use newest version of item event framework. No functional changes for this module.
 
 1.4
