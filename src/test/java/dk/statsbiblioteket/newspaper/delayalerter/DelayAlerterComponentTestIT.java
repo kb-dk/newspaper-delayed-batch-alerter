@@ -46,8 +46,7 @@ public class DelayAlerterComponentTestIT {
     private String pathToProperties;
     private Properties properties;
     private GreenMail greenMail;
-
-
+    private String pid;
 
     @BeforeMethod(groups = "integrationTest")
     public void setUp() throws Exception {
@@ -68,9 +67,9 @@ public class DelayAlerterComponentTestIT {
         String summaLocation = properties.getProperty(ConfigConstants.AUTONOMOUS_SBOI_URL);
         PremisManipulatorFactory<Batch> factory = new PremisManipulatorFactory<>( PremisManipulatorFactory.TYPE,new BatchItemFactory());
         logger.debug("Creating sboi client");
-        sboi = new SBOIEventIndex<>(summaLocation, factory, domsEventClient, Integer.parseInt(properties.getProperty(ConfigConstants.SBOI_PAGESIZE,"100")));
+        sboi = new NewspaperSBOIEventStorage(summaLocation, factory, domsEventClient, Integer.parseInt(properties.getProperty(ConfigConstants.SBOI_PAGESIZE,"100")));
         logger.debug("Creating round-trip object (if necessary).");
-        String pid = domsEventClient.createBatchRoundTrip(Batch.formatFullID(batchId, roundTrip));
+        pid = domsEventClient.createBatchRoundTrip(Batch.formatFullID(batchId, roundTrip));
         logger.debug("Created doms object {}.", pid);
         logger.debug("Resetting doms round-trip object state");
         domsEventClient.triggerWorkflowRestartFromFirstFailure(new Batch(batchId, roundTrip), 3, 500, "Data_Received");
