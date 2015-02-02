@@ -16,7 +16,7 @@
             <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="dk.statsbibliokeket" level="INFO"/>
+    <logger name="dk.statsbiblioteket" level="INFO"/>
     <root level="WARN">
         <appender-ref ref="FILE"/>
     </root>
