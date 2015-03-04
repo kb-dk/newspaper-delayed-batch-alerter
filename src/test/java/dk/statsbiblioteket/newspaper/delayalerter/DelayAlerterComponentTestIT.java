@@ -72,7 +72,7 @@ public class DelayAlerterComponentTestIT {
         pid = domsEventClient.createBatchRoundTrip(Batch.formatFullID(batchId, roundTrip));
         logger.debug("Created doms object {}.", pid);
         logger.debug("Resetting doms round-trip object state");
-        domsEventClient.triggerWorkflowRestartFromFirstFailure(new Batch(batchId, roundTrip), 3, 500, "Data_Received");
+        domsEventClient.triggerWorkflowRestartFromFirstFailure(new Batch(batchId, roundTrip), "Data_Received");
         logger.debug("Waiting for reindexing.");
         waitForEvent(batchId, roundTrip, DATA_RECEIVED, false);
         ServerSetup serverSetup = new ServerSetup(40026, ServerSetup.SMTP.getBindAddress(), ServerSetup.SMTP.getProtocol());
