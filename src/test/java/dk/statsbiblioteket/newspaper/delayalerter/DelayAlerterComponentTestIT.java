@@ -100,8 +100,8 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Entering testDoMainSendAlert");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
-        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
-        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
+        domsEventClient.appendEventToItem(new Batch(batchId, roundTrip), "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
+        domsEventClient.appendEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
         logger.debug("Waiting for batch to be added to SBOI");
         waitForBatchIsInSboi(batchId,
                 roundTrip,
@@ -162,9 +162,9 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Entering testDoMainApproved.");
         Date now = new Date();
         Date thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000L);
-        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
-        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
-        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", new Date(), "details", ROUNDTRIP_APPROVED, true);
+        domsEventClient.appendEventToItem(new Batch(batchId, roundTrip), "me", thirtyDaysAgo, "details", DATA_RECEIVED, true);
+        domsEventClient.appendEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
+        domsEventClient.appendEventToItem(new Batch(batchId, roundTrip), "me", new Date(), "details", ROUNDTRIP_APPROVED, true);
         waitForBatchIsInSboi(batchId,
                 roundTrip,
                 DATA_RECEIVED + "," + IT_EVENT + "," + ROUNDTRIP_APPROVED, WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
@@ -191,8 +191,8 @@ public class DelayAlerterComponentTestIT {
         logger.debug("Entering testDoMainNotTooOld.");
         Date now = new Date();
         Date tenDaysAgo = new Date(now.getTime() - 10 * 24 * 3600 * 1000L);
-        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", tenDaysAgo, "details", DATA_RECEIVED, true);
-        domsEventClient.addEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
+        domsEventClient.appendEventToItem(new Batch(batchId, roundTrip), "me", tenDaysAgo, "details", DATA_RECEIVED, true);
+        domsEventClient.appendEventToItem(new Batch(batchId, roundTrip), "me", now, "details", IT_EVENT, true);
         waitForBatchIsInSboi(batchId,
                 roundTrip,
                 DATA_RECEIVED + "," + IT_EVENT, ROUNDTRIP_APPROVED+","+WARNING_EMAIL_SENT + "," + MANUALLY_STOPPED);
