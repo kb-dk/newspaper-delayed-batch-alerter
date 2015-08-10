@@ -85,7 +85,7 @@ public class DelayAlerterComponentTest {
 
     @BeforeTest
     public void setUp() {
-        ServerSetup serverSetup = new ServerSetup(40026, ServerSetup.SMTP.getBindAddress(), ServerSetup.SMTP.getProtocol());
+        ServerSetup serverSetup = new ServerSetup(40025, ServerSetup.SMTP.getBindAddress(), ServerSetup.SMTP.getProtocol());
         this.greenMail = new GreenMail(serverSetup);
         greenMail.stop();
         greenMail.start();
@@ -107,7 +107,7 @@ public class DelayAlerterComponentTest {
         Properties properties = new Properties();
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_EMAIL_ADDRESSES, "foo@bar.com, bar@bar.com");
         properties.setProperty(DelayAlerterConfigConstants.DELAY_ALERT_DAYS, "20");
-        final SimpleMailer simpleMailer = new SimpleMailer("me@test.com", "localhost", "40026");
+        final SimpleMailer simpleMailer = new SimpleMailer("me@test.com", "localhost", "40025");
         DelayAlerterComponent component = new DelayAlerterComponent(properties, simpleMailer);
         Batch batch = new Batch();
         ResultCollector resultCollector = new ResultCollector("foo", "bar");
