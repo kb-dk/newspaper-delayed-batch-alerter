@@ -1,3 +1,6 @@
+1.6
+* Rename start script to pollAndWork.sh to match all other components
+
 1.5
 * Do not depend on an unused iterator
 * Use newest version of item event framework. No functional changes for this module.
